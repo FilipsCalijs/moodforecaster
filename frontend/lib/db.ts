@@ -5,7 +5,7 @@ const pool = mysql.createPool({
   port: 3306,
   user: 'root',
   password: 'root',
-  database: 'mood_forecaster_db',
+  database: 'moodforecaster',
 });
 
 export default pool;
