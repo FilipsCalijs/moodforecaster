@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import LogoutButton from "@/components/LogoutButton";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -7,9 +7,22 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 export default function Page() {
   const [text, setText] = useState('');
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<{
+    mood: string;
+    recommendations: {
+      music: string;
+      movie: string;
+      book: string;
+    };
+  } | null>(null);
   const [error, setError] = useState('');
+  const [isAdmin, setIsAdmin] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    const userRole = localStorage.getItem('userRole');
+    setIsAdmin(userRole === 'admin');
+  }, []);
 
   const handleAnalyze = async () => {
     if (!text.trim()) {
@@ -73,6 +86,14 @@ export default function Page() {
             >
               Vēsture
             </button>
+            {isAdmin && (
+              <button
+                onClick={() => router.push('/admin')}
+                className="px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition flex items-center gap-2"
+              >
+                Admin
+              </button>
+            )}
             <LogoutButton />
           </div>
         </div>

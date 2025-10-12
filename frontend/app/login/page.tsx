@@ -27,6 +27,9 @@ export default function LoginPage() {
 
       if (res.ok && data.token) {
         localStorage.setItem('token', data.token);
+        if (data.role) {
+          localStorage.setItem('userRole', data.role);
+        }
         router.push('/');
       }
     } catch (err) {

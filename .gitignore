@@ -43,3 +43,5 @@ next-env.d.ts
 
 /backend/node_modules/
 /frontend/node_modules/
+
+ADD_ADMIN_ROLE.sql
