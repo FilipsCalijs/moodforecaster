@@ -38,7 +38,7 @@ export default function LoginPage() {
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-purple-500 via-pink-500 to-red-500">
       <div className="bg-white rounded-3xl shadow-2xl p-12 w-full max-w-md">
-        <h1 className="text-4xl font-extrabold text-center text-gray-800 mb-8">Welcome Back</h1>
+        <h1 className="text-4xl font-extrabold text-center text-gray-800 mb-8">Laipni lūdzam atpakaļ</h1>
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
           <div className="relative">
             <input
@@ -47,10 +47,10 @@ export default function LoginPage() {
               value={form.email}
               onChange={handleChange}
               className="peer placeholder-transparent px-4 py-3 w-full rounded-xl bg-gray-100 focus:bg-white focus:ring-2 focus:ring-pink-300 shadow-md transition text-gray-900"
-              placeholder="Email"
+              placeholder="E-pasts"
             />
             <label className="absolute left-4 top-3 text-gray-400 text-sm transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-base peer-focus:top-0 peer-focus:text-pink-500 peer-focus:text-sm">
-              Email
+              E-pasts
             </label>
           </div>
 
@@ -61,10 +61,10 @@ export default function LoginPage() {
               value={form.password}
               onChange={handleChange}
               className="peer placeholder-transparent px-4 py-3 w-full rounded-xl bg-gray-100 focus:bg-white focus:ring-2 focus:ring-purple-300 shadow-md transition text-gray-900"
-              placeholder="Password"
+              placeholder="Parole"
             />
             <label className="absolute left-4 top-3 text-gray-400 text-sm transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-base peer-focus:top-0 peer-focus:text-purple-500 peer-focus:text-sm">
-              Password
+              Parole
             </label>
           </div>
 
@@ -72,7 +72,7 @@ export default function LoginPage() {
             type="submit"
             className="bg-gradient-to-r from-purple-500 to-pink-500 text-white py-3 rounded-xl font-semibold shadow-lg hover:scale-105 transition-transform"
           >
-            Login
+            Pieslēgties
           </button>
         </form>
 
@@ -81,9 +81,9 @@ export default function LoginPage() {
         )}
 
         <p className="mt-8 text-center text-gray-500">
-          Dont have an account?{' '}
+          Nav konta?{' '}
           <Link href="/register" className="text-pink-500 font-semibold hover:underline">
-            Sign up
+            Reģistrēties
           </Link>
         </p>
       </div>

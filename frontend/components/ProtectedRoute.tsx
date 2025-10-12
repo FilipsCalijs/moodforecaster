@@ -15,13 +15,13 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
     const token = localStorage.getItem("token");
 
     if (!token) {
-      router.push("/login"); // редирект на login если нет токена
+      router.push("/login"); 
     } else {
       setLoading(false);
     }
   }, [router]);
 
-  if (loading) return <p>Загрузка...</p>;
+  if (loading) return <p>Ielādē...</p>;
 
   return <>{children}</>;
 }
