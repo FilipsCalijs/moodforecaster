@@ -18,6 +18,32 @@ export default function Page() {
   const [error, setError] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
   const router = useRouter();
+  const welcomeMessage = 'Sveiki! Ierakstiet savu noskaņojumu zemāk.';
+  const footerText = '© 2025 Noskaņojumu Dienasgrāmata';
+  const defaultMood = 'neutral';
+
+  const clearText = () => {
+    setText('');
+    setError('');
+    setResult(null);
+  };
+
+  const getTextLength = (input: string) => {
+    return input.length;
+  };
+
+  const getRandomEmoji = () => {
+    const emojis = ['😄', '😎', '🤔', '😴', '😇'];
+    return emojis[Math.floor(Math.random() * emojis.length)];
+  };
+
+  const isTextEmpty = (input: string) => {
+    return input.trim() === '';
+  };
+
+  const capitalizeText = (input: string) => {
+    return input.charAt(0).toUpperCase() + input.slice(1);
+  };
 
   useEffect(() => {
     const userRole = localStorage.getItem('userRole');
@@ -25,8 +51,15 @@ export default function Page() {
   }, []);
 
   const handleAnalyze = async () => {
-    if (!text.trim()) {
+    const maxEntryLength = 500;
+
+    if (isTextEmpty(text)) {
       setError('Lūdzu, ievadiet tekstu');
+      return;
+    }
+
+    if (getTextLength(text) > maxEntryLength) {
+      setError(`Ieraksts nevar pārsniegt ${maxEntryLength} simbolus`);
       return;
     }
 
@@ -52,8 +85,17 @@ export default function Page() {
         return;
       }
 
-      setResult(data);
-      setText(''); 
+      setResult({
+        ...data,
+        mood: data.mood || defaultMood,
+        recommendations: {
+          music: capitalizeText(data.recommendations.music),
+          movie: capitalizeText(data.recommendations.movie),
+          book: capitalizeText(data.recommendations.book)
+        }
+      });
+
+      clearText(); 
     } catch (err) {
       console.error(err);
       setError('Servera kļūda');
@@ -65,7 +107,7 @@ export default function Page() {
   const getMoodEmoji = (mood: string) => {
     if (mood === 'positive') return '😊';
     if (mood === 'negative') return '😔';
-    return '😐';
+    return getRandomEmoji();
   };
 
   const getMoodText = (mood: string) => {
@@ -99,7 +141,8 @@ export default function Page() {
         </div>
 
         <div className="flex-1 p-6 max-w-4xl mx-auto w-full">
-          <div className="bg-white rounded-2xl shadow-xl p-8 mb-6">
+          <div className="text-gray-600 mb-4">
+            <p className="text-gray-500 mb-2">{welcomeMessage}</p>
             <h2 className="text-xl font-semibold text-gray-800 mb-4">
               Kā jums šodien klājas?
             </h2>
@@ -109,15 +152,25 @@ export default function Page() {
 
             <textarea
               value={text}
-              onChange={(e) => setText(e.target.value)}
+              onChange={(e) => {
+                const input = e.target.value;
+                setText(capitalizeText(input));
+                setError(isTextEmpty(input) ? 'Lūdzu, ievadiet tekstu' : '');
+              }}
               placeholder="Rakstiet šeit par savu dienu..."
               className="w-full h-40 px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:outline-none resize-none text-gray-800"
               disabled={loading}
             />
 
+            <div className="flex justify-between mt-2 text-gray-500 text-sm">
+              <span>{isTextEmpty(text) ? '❗ Ieraksts ir tukšs' : '✔ Teksts ievadīts'}</span>
+              <span>{`Simboli: ${getTextLength(text)}/500`}</span>
+              <span>{getRandomEmoji()}</span>
+            </div>
+
             <button
               onClick={handleAnalyze}
-              disabled={loading || !text.trim()}
+              disabled={loading || isTextEmpty(text)}
               className="mt-4 w-full py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-xl shadow-lg hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
               {loading ? 'Analizē...' : 'Analizēt noskaņojumu'}
@@ -135,7 +188,7 @@ export default function Page() {
               <div className="text-center mb-6">
                 <div className="text-6xl mb-3">{getMoodEmoji(result.mood)}</div>
                 <h3 className="text-2xl font-bold text-gray-800">
-                  Jūsu noskaņojums: {getMoodText(result.mood)}
+                  Jūsu noskaņojums: {getMoodText(result.mood || defaultMood)}
                 </h3>
               </div>
 
@@ -172,7 +225,7 @@ export default function Page() {
               </div>
 
               <button
-                onClick={() => setResult(null)}
+                onClick={clearText}
                 className="mt-6 w-full py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
               >
                 Jauns ieraksts
@@ -180,6 +233,7 @@ export default function Page() {
             </div>
           )}
         </div>
+        <p className="text-black text-center py-4">{footerText}</p>
       </div>
     </ProtectedRoute>
   );
