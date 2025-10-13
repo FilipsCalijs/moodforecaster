@@ -1,17 +1,18 @@
 import OpenAI from "openai";
 import dotenv from "dotenv";
 
-dotenv.config(); // чтобы прочитать API_KEY из .env
+dotenv.config();
 
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
 
+// Send a prompt to GPT and return the response
 export async function askGPT(prompt) {
   const response = await client.chat.completions.create({
     model: "gpt-4",
     messages: [
-      { role: "system", content: "Ты помощник." },
+      { role: "system", content: "You are an assistant." },
       { role: "user", content: prompt }
     ]
   });
