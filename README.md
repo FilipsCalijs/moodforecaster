@@ -55,8 +55,47 @@
 - MySQL datubāze  
 - OpenAI API atslēga  
 
-### Instalācija
-1. Lejupielādējiet repozitoriju:  
+### 1. Lejupielādējiet repozitoriju
 ```bash
 git clone https://github.com/FilipsCalijs/moodforecaster.git
 cd moodforecaster
+```
+
+---
+
+### 2. Konfigurējiet datubāzi
+
+Izveidojiet jaunu MySQL datubāzi ar nosaukumu `moodforecaster`.
+
+Failā `frontend/lib/db.ts` nomainiet datubāzes pieslēguma datus (lietotājvārdu, paroli) uz savējiem, ja tie atšķiras no noklusējuma (`root/root`).
+
+Importējiet nepieciešamās datubāzes tabulas (SQL shēma nav iekļauta repozitorijā, tāpēc tā jāizveido manuāli, balstoties uz API vaicājumiem).
+
+---
+
+### 3. Konfigurējiet vides mainīgos (environment variables)
+
+Frontend mapē izveidojiet `.env.local` failu un pievienojiet savu OpenAI API atslēgu:
+```env
+OPENAI_API_KEY="jūsu_openai_atslēga"
+```
+
+---
+
+### 4. Instalējiet atkarības
+Atveriet termināli `frontend` mapē un izpildiet komandu:
+```bash
+npm install
+```
+
+---
+
+### 5. Palaišana
+Atrodoties `frontend` mapē, palaidiet izstrādes serveri:
+```bash
+npm run dev
+```
+
+Atveriet pārlūkprogrammu un dodieties uz [http://localhost:3000](http://localhost:3000)
+
+---
