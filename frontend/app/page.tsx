@@ -95,7 +95,7 @@ export default function Page() {
         }
       });
 
-      clearText(); 
+      setText(''); 
     } catch (err) {
       console.error(err);
       setError('Servera kļūda');

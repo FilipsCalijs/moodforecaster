@@ -15,6 +15,11 @@ export default function HistoryPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedEntry, setSelectedEntry] = useState<any>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editText, setEditText] = useState('');
+  const [updateLoading, setUpdateLoading] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showClearAllConfirm, setShowClearAllConfirm] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -59,9 +64,92 @@ export default function HistoryPage() {
 
       if (res.ok) {
         setSelectedEntry(data.entry);
+        setEditText(data.entry.text);
+        setIsEditing(false);
       }
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const handleUpdateEntry = async () => {
+    if (!selectedEntry || !editText.trim()) return;
+
+    setUpdateLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/api/entry/${selectedEntry.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ text: editText })
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        await loadEntryDetails(selectedEntry.id);
+        await loadHistory();
+        setIsEditing(false);
+      } else {
+        setError(data.message || 'Kļūda atjaunināšanā');
+      }
+    } catch (err) {
+      console.error(err);
+      setError('Servera kļūda');
+    } finally {
+      setUpdateLoading(false);
+    }
+  };
+
+  const handleDeleteEntry = async () => {
+    if (!selectedEntry) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/api/entry/${selectedEntry.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (res.ok) {
+        setSelectedEntry(null);
+        setShowDeleteConfirm(false);
+        await loadHistory();
+      } else {
+        const data = await res.json();
+        setError(data.message || 'Kļūda dzēšanā');
+      }
+    } catch (err) {
+      console.error(err);
+      setError('Servera kļūda');
+    }
+  };
+
+  const handleClearAllHistory = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/history', {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (res.ok) {
+        setShowClearAllConfirm(false);
+        await loadHistory();
+      } else {
+        const data = await res.json();
+        setError(data.message || 'Kļūda dzēšanā');
+      }
+    } catch (err) {
+      console.error(err);
+      setError('Servera kļūda');
     }
   };
 
@@ -95,6 +183,14 @@ export default function HistoryPage() {
         <div className="flex justify-between items-center p-4 bg-white shadow-md">
           <h1 className="text-2xl font-bold text-purple-600">Noskaņojumu Vēsture</h1>
           <div className="flex gap-3">
+            {entries.length > 0 && (
+              <button
+                onClick={() => setShowClearAllConfirm(true)}
+                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+              >
+                Dzēst visu vēsturi
+              </button>
+            )}
             <button
               onClick={() => router.push('/')}
               className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition"
@@ -171,10 +267,13 @@ export default function HistoryPage() {
       </div>
 
       {/* Модальное окно с деталями */}
-      {selectedEntry && (
+      {selectedEntry && !showDeleteConfirm && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
-          onClick={() => setSelectedEntry(null)}
+          onClick={() => {
+            setSelectedEntry(null);
+            setIsEditing(false);
+          }}
         >
           <div
             className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
@@ -194,7 +293,10 @@ export default function HistoryPage() {
                   </div>
                 </div>
                 <button
-                  onClick={() => setSelectedEntry(null)}
+                  onClick={() => {
+                    setSelectedEntry(null);
+                    setIsEditing(false);
+                  }}
                   className="text-gray-400 hover:text-gray-600"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -205,37 +307,148 @@ export default function HistoryPage() {
 
               <div className="mb-6 p-4 bg-gray-50 rounded-lg">
                 <h4 className="font-semibold text-gray-700 mb-2">Jūsu ieraksts:</h4>
-                <p className="text-gray-800 whitespace-pre-wrap">{selectedEntry.text}</p>
+                {isEditing ? (
+                  <div>
+                    <textarea
+                      value={editText}
+                      onChange={(e) => setEditText(e.target.value)}
+                      className="w-full h-32 px-3 py-2 border-2 border-purple-300 rounded-lg focus:border-purple-500 focus:outline-none resize-none text-gray-800"
+                      disabled={updateLoading}
+                    />
+                    <div className="flex gap-2 mt-3">
+                      <button
+                        onClick={handleUpdateEntry}
+                        disabled={updateLoading || !editText.trim()}
+                        className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {updateLoading ? 'Analizē...' : 'Saglabāt'}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setIsEditing(false);
+                          setEditText(selectedEntry.text);
+                        }}
+                        disabled={updateLoading}
+                        className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition disabled:opacity-50"
+                      >
+                        Atcelt
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-gray-800 whitespace-pre-wrap">{selectedEntry.text}</p>
+                )}
               </div>
 
-              <div>
-                <h4 className="text-lg font-semibold text-gray-800 mb-3">Ieteikumi:</h4>
-                <div className="space-y-3">
-                  <div className="p-4 bg-purple-50 rounded-lg">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-2xl">🎵</span>
-                      <h5 className="font-semibold text-purple-700">Mūzika</h5>
+              {!isEditing && (
+                <>
+                  <div>
+                    <h4 className="text-lg font-semibold text-gray-800 mb-3">Ieteikumi:</h4>
+                    <div className="space-y-3">
+                      <div className="p-4 bg-purple-50 rounded-lg">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-2xl">🎵</span>
+                          <h5 className="font-semibold text-purple-700">Mūzika</h5>
+                        </div>
+                        <p className="text-gray-700">{selectedEntry.recommendations.music}</p>
+                      </div>
+
+                      <div className="p-4 bg-pink-50 rounded-lg">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-2xl">🎬</span>
+                          <h5 className="font-semibold text-pink-700">Filma</h5>
+                        </div>
+                        <p className="text-gray-700">{selectedEntry.recommendations.movie}</p>
+                      </div>
+
+                      <div className="p-4 bg-indigo-50 rounded-lg">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-2xl">📚</span>
+                          <h5 className="font-semibold text-indigo-700">Grāmata</h5>
+                        </div>
+                        <p className="text-gray-700">{selectedEntry.recommendations.book}</p>
+                      </div>
                     </div>
-                    <p className="text-gray-700">{selectedEntry.recommendations.music}</p>
                   </div>
 
-                  <div className="p-4 bg-pink-50 rounded-lg">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-2xl">🎬</span>
-                      <h5 className="font-semibold text-pink-700">Filma</h5>
-                    </div>
-                    <p className="text-gray-700">{selectedEntry.recommendations.movie}</p>
+                  <div className="flex gap-2 mt-6">
+                    <button
+                      onClick={() => setIsEditing(true)}
+                      className="flex-1 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+                    >
+                      Rediģēt
+                    </button>
+                    <button
+                      onClick={() => setShowDeleteConfirm(true)}
+                      className="flex-1 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+                    >
+                      Dzēst
+                    </button>
                   </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
-                  <div className="p-4 bg-indigo-50 rounded-lg">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-2xl">📚</span>
-                      <h5 className="font-semibold text-indigo-700">Grāmata</h5>
-                    </div>
-                    <p className="text-gray-700">{selectedEntry.recommendations.book}</p>
-                  </div>
-                </div>
-              </div>
+      {showDeleteConfirm && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+          onClick={() => setShowDeleteConfirm(false)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-xl font-bold text-gray-800 mb-4">Apstiprināt dzēšanu</h3>
+            <p className="text-gray-600 mb-6">
+              Vai tiešām vēlaties dzēst šo ierakstu? Šo darbību nevar atsaukt.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={handleDeleteEntry}
+                className="flex-1 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+              >
+                Dzēst
+              </button>
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                className="flex-1 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition"
+              >
+                Atcelt
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showClearAllConfirm && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+          onClick={() => setShowClearAllConfirm(false)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-xl font-bold text-gray-800 mb-4">Dzēst visu vēsturi</h3>
+            <p className="text-gray-600 mb-6">
+              Vai tiešām vēlaties dzēst VISUS savus ierakstus? Šo darbību nevar atsaukt.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={handleClearAllHistory}
+                className="flex-1 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+              >
+                Dzēst visu
+              </button>
+              <button
+                onClick={() => setShowClearAllConfirm(false)}
+                className="flex-1 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition"
+              >
+                Atcelt
+              </button>
             </div>
           </div>
         </div>
