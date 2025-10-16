@@ -44,36 +44,38 @@ export default function LoginPage() {
         <h1 className="text-4xl font-extrabold text-center text-gray-800 mb-8">Laipni lūdzam atpakaļ</h1>
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
           <div className="relative">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              E-pasts
+            </label>
             <input
               name="email"
               type="email"
               value={form.email}
               onChange={handleChange}
-              className="peer placeholder-transparent px-4 py-3 w-full rounded-xl bg-gray-100 focus:bg-white focus:ring-2 focus:ring-pink-300 shadow-md transition text-gray-900"
-              placeholder="E-pasts"
+              className="px-4 py-4 w-full rounded-xl bg-gray-100 focus:bg-white focus:ring-2 focus:ring-pink-400 focus:outline-none shadow-md transition text-gray-900 text-base"
+              placeholder="ievadiet savu e-pastu"
+              required
             />
-            <label className="absolute left-4 top-3 text-gray-400 text-sm transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-base peer-focus:top-0 peer-focus:text-pink-500 peer-focus:text-sm">
-              E-pasts
-            </label>
           </div>
 
           <div className="relative">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Parole
+            </label>
             <input
               name="password"
               type="password"
               value={form.password}
               onChange={handleChange}
-              className="peer placeholder-transparent px-4 py-3 w-full rounded-xl bg-gray-100 focus:bg-white focus:ring-2 focus:ring-purple-300 shadow-md transition text-gray-900"
-              placeholder="Parole"
+              className="px-4 py-4 w-full rounded-xl bg-gray-100 focus:bg-white focus:ring-2 focus:ring-purple-400 focus:outline-none shadow-md transition text-gray-900 text-base"
+              placeholder="ievadiet savu paroli"
+              required
             />
-            <label className="absolute left-4 top-3 text-gray-400 text-sm transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-base peer-focus:top-0 peer-focus:text-purple-500 peer-focus:text-sm">
-              Parole
-            </label>
           </div>
 
           <button
             type="submit"
-            className="bg-gradient-to-r from-purple-500 to-pink-500 text-white py-3 rounded-xl font-semibold shadow-lg hover:scale-105 transition-transform"
+            className="bg-gradient-to-r from-purple-500 to-pink-500 text-white py-4 rounded-xl font-semibold shadow-lg hover:scale-105 transition-transform text-base"
           >
             Pieslēgties
           </button>
